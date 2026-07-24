@@ -15,15 +15,17 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
-
+alert_channel = None
 @bot.event
 async def on_ready():
+    global alert_channel
     print(f"{bot.user} 로그인 완료!")
-    channel = bot.get_channel(1530184263406981180)
-    if channel:
-        await channel.send("✅ 봇이 정상적으로 시작되었습니다.")
-    else:
-        print("채널을 찾을 수 없습니다.")
+    try:
+        alert_channel = await bot.fetch_channel(DISCORD_CHANNEL_ID)
+        await alert_channel.send("✅ 봇이 정상적으로 시작되었습니다.")
+    except Exception as e:
+        print(f"채널을 찾을 수 없습니다. : {e}")
+        return
     if not check_youtube.is_running():
         check_youtube.start()
 
@@ -45,8 +47,7 @@ async def check_youtube():
     #     return
 
         if video["id"] != last_video:
-            channel = await bot.fetch_channel(DISCORD_CHANNEL_ID)
-            await channel.send(
+            await alert_channel.send(
                 f"🔔 새 영상 업로드!\n{video['link']}"
          )
             save_last_video(video["id"])
