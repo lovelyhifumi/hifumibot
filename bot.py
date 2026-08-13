@@ -1,13 +1,14 @@
-from discord.ext import tasks
-from youtube_checker import get_latest_video, load_last_video, save_last_video
-from config import DISCORD_CHANNEL_ID, CHECK_INTERVAL
 import os
+from dotenv import load_dotenv
+load_dotenv()
+from discord.ext import tasks
+from config import DISCORD_CHANNEL_ID, CHECK_INTERVAL
+from youtube_checker import get_latest_video, load_last_video, save_last_video
+
+
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
 
-
-load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
 
