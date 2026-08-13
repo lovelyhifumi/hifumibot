@@ -36,22 +36,29 @@ async def ping(ctx):
 
 @tasks.loop(seconds=CHECK_INTERVAL)
 async def check_youtube():
-    video = get_latest_video()
     try:
+        video = get_latest_video()
+
         if video is None:
             return
+
         last_video = load_last_video()
 
-    # 첫 실행이면 현재 영상 저장만 하고 알림 안 보냄
-    # if last_video is None:
-    #     save_last_video(video["id"])
-    #     return
+        print("현재 유튜브 영상 ID:", video["id"])
+        print("저장된 영상 ID:", last_video)
+
+        if last_video is None:
+            save_last_video(video["id"])
+            print("첫 실행: 최신 영상 저장")
+            return
 
         if video["id"] != last_video:
             await alert_channel.send(
                 f"🔔 새 영상 업로드!\n{video['link']}"
-         )
+            )
+
             save_last_video(video["id"])
+
     except Exception as e:
         print(f"유튜브 확인 중 오류: {e}")
 
