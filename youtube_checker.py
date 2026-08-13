@@ -3,8 +3,9 @@ import feedparser
 from config import YOUTUBE_CHANNEL_ID
 from pathlib import Path
 
-BASE_DIR = Path(__file__).parent
-LAST_VIDEO_FILE = BASE_DIR / "data" / "last_video.txt"
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+LAST_VIDEO_FILE = DATA_DIR / "last_video.txt"
 
 RSS_URL = f"https://www.youtube.com/feeds/videos.xml?channel_id={YOUTUBE_CHANNEL_ID}"
 
@@ -24,13 +25,16 @@ def get_latest_video():
 
 
 def load_last_video():
-    if not os.path.exists(LAST_VIDEO_FILE):
+    if not LAST_VIDEO_FILE.exists():
         return None
 
-    with open(LAST_VIDEO_FILE, "r") as f:
+    with open(LAST_VIDEO_FILE, "r", encoding="utf-8") as f:
         return f.read().strip()
 
 
 def save_last_video(video_id):
-    with open(LAST_VIDEO_FILE, "w") as f:
+    # data 폴더가 없으면 자동 생성
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    with open(LAST_VIDEO_FILE, "w", encoding="utf-8") as f:
         f.write(video_id)
