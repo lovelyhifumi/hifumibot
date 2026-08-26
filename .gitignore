@@ -1,5 +1,5 @@
 .env
 __pycache__/
 *.pyc
-data/last_video.txt
+data/
 test.py

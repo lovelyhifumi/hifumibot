@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-API_KEY = os.getenv("NEXON_API_KEY")
+API_KEY = os.getenv("MAPLE_TOKEN")
 
 headers = {
     "x-nxopen-api-key": API_KEY
@@ -16,7 +16,6 @@ DATA_DIR = BASE_DIR / "data"
 LAST_NOTICE_FILE = DATA_DIR / "last_notice.txt"
 
 url = "https://open.api.nexon.com/maplestory/v1/notice"
-
 def get_notices():
     try:
         response = requests.get(url, headers=headers, timeout=10)

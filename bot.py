@@ -34,6 +34,8 @@ async def on_ready():
         return
     if not check_youtube.is_running():
         check_youtube.start()
+    if not check_nexon.is_running():
+        check_nexon.start()
 
 @bot.command()
 async def ping(ctx):
@@ -74,8 +76,12 @@ async def check_nexon():
         return
     last_notice_id = load_last_notice()
     if last_notice_id is None:
+        print("최초 실행 감지")
+        print("저장할 공지 ID:", notices[0]["notice_id"])
         save_last_notice(notices[0]["notice_id"])
+        print("저장 완료")
         return
+    print("현재 최신 공지 ID:", notices[0]["notice_id"])
 
     new_notices = []
     for notice in notices:
