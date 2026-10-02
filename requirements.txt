@@ -1,4 +1,4 @@
-discord.py
-feedparser
-python-dotenv
-requests
+discord.py>=2.4,<3
+feedparser>=6.0,<7
+python-dotenv>=1.0,<2
+requests>=2.31,<3
