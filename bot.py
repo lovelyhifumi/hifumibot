@@ -2,6 +2,8 @@
 import asyncio
 import json
 import logging
+import re
+from urllib.parse import urlparse, parse_qs
 import discord
 from discord import app_commands
 from discord.ext import tasks
@@ -10,6 +12,23 @@ from subscriptions import SubscriptionStore, marker, pending_items
 from youtube_checker import get_videos, resolve_channel, get_channel_name
 
 log = logging.getLogger('notification_bot')
+
+
+def youtube_ids(content):
+    """자동 미리보기 대신 메시지 본문의 영상 URL에서 ID를 읽습니다."""
+    ids = set()
+    for url in re.findall(r'https?://[^\s<>]+', content):
+        parsed = urlparse(url.rstrip(').,!?'))
+        host = (parsed.hostname or '').lower()
+        if host in {'youtube.com', 'www.youtube.com', 'm.youtube.com'} and parsed.path == '/watch':
+            video_id = parse_qs(parsed.query).get('v', [''])[0]
+        elif host == 'youtu.be':
+            video_id = parsed.path.lstrip('/')
+        else:
+            continue
+        if re.fullmatch(r'[A-Za-z0-9_-]{11}', video_id):
+            ids.add(video_id)
+    return ids
 
 
 class NotificationBot(discord.Client):
@@ -86,6 +105,9 @@ class NotificationBot(discord.Client):
             next_cursor = max(next_cursor, message.id)
             if message.author.id != self.user.id:
                 continue
+            if row['kind'] == 'youtube':
+                # 영상 ID는 유튜브 전체에서 고유합니다. 이 구독의 목록과만 비교합니다.
+                seen.update(youtube_ids(message.content))
             for embed in message.embeds:
                 footer = embed.footer.text or ''
                 if footer.startswith(prefix):
@@ -93,6 +115,10 @@ class NotificationBot(discord.Client):
         self.history_cache[key] = {'seen': seen, 'cursor': next_cursor}
         pending = pending_items(items, json.loads(row['baseline']), seen)
         for item in pending:
+            if row['kind'] == 'youtube':
+                await channel.send(content=f"🔔 새 영상 업로드!\nhttps://www.youtube.com/watch?v={item['id']}")
+                seen.add(item['id'])
+                continue
             embed = discord.Embed(title='🔔 새 영상',
                                   description=item['title'][:4000], url=item['url'],
                                   color=0xE53935)
